@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{.Title}}</title>
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: #f8f8f8;
+      color: #333;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    h1 {
+      color: #2196f3;
+      margin-bottom: 20px;
+    }
+
+    section {
+      margin-top: 20px;
+      width: 100%;
+      max-width: 600px;
+      text-align: left;
+      background-color: #fff;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    a {
+      display: inline-block;
+      background-color: #2196f3;
+      color: #fff;
+      text-decoration: none;
+      padding: 5px 10px;
+      border-radius: 5px;
+      margin-bottom: 5px;
+      transition: background-color 0.3s ease;
+    }
+
+    a:hover {
+      background-color: #1565c0;
+    }
+  </style>
+</head>
+<body>
+  <h1>{{.Title}}</h1>
+  <section>
+    {{range .Story}}
+    <article>{{.}}</article>
+    {{end}}
+  </section>
+
+  {{if gt (len .Options) 0}}
+    <section>
+      {{range .Options}}
+      <a href="{{.Arc}}">{{.Text}}</a>
+      {{end}}
+    </section>
+  {{end}}
+</body>
+</html>

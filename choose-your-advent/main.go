@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"net/http"
 	"os"
 	"strings"
@@ -39,13 +40,17 @@ func parseJSON(filepath string) map[string]Chapter {
 	return story
 }
 
-func ReqestHandler(fallback http.Handler) http.HandlerFunc {
+func ReqestHandler(fallback http.Handler, template *template.Template) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		path := strings.TrimLeft(r.URL.Path, "/")
 		story := parseJSON("./story.json")
 
 		if data, ok := story[path]; ok {
-			fmt.Fprintf(w, data.Title)
+			tmplt, _ := template.ParseFiles("story.html")
+			err := tmplt.Execute(w, data)
+			if err != nil {
+				return
+			}
 		} else {
 			fallback.ServeHTTP(w, r)
 		}
@@ -54,8 +59,9 @@ func ReqestHandler(fallback http.Handler) http.HandlerFunc {
 
 func main() {
 	mux := defaultMux()
+	var tmplt *template.Template
 
-	http.ListenAndServe(":8080", ReqestHandler(mux))
+	http.ListenAndServe(":8080", ReqestHandler(mux, tmplt))
 }
 
 func defaultMux() *http.ServeMux {
