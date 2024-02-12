@@ -1,75 +1,53 @@
 package main
 
 import (
-	"encoding/json"
+	"flag"
 	"fmt"
 	"html/template"
+	"log"
 	"net/http"
 	"os"
 	"strings"
 )
 
-type Chapter struct {
-	Title   string   `json:"title"`
-	Story   []string `json:"story"`
-	Options []Option `json:"options"`
-}
+func main() {
+	port := flag.Int("port", 3000, "server port")
+	filename := flag.String("file", "story.json", "JSON file with story")
+	flag.Parse()
 
-type Option struct {
-	Text string `json:"text"`
-	Arc  string `json:"arc"`
-}
-
-func readJSONFile(file string) []byte {
-	data, err := os.ReadFile(file)
+	file, err := os.Open(*filename)
 	if err != nil {
-		fmt.Println("something went wrong reading file")
-		os.Exit(1)
-	}
-
-	return []byte(data)
-}
-
-func parseJSON(filepath string) map[string]Chapter {
-	jsonByt := readJSONFile(filepath)
-	var story map[string]Chapter
-
-	if err := json.Unmarshal(jsonByt, &story); err != nil {
 		panic(err)
 	}
-	return story
-}
-
-func ReqestHandler(fallback http.Handler, template *template.Template) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		path := strings.TrimLeft(r.URL.Path, "/")
-		story := parseJSON("./story.json")
-
-		if data, ok := story[path]; ok {
-			tmplt, _ := template.ParseFiles("story.html")
-			err := tmplt.Execute(w, data)
-			if err != nil {
-				return
-			}
-		} else {
-			fallback.ServeHTTP(w, r)
-		}
+	story, err := JSONStory(file)
+	if err != nil {
+		panic(err)
 	}
-}
 
-func main() {
-	mux := defaultMux()
-	var tmplt *template.Template
+	content, err := os.ReadFile("./story.html")
+	if err != nil {
+		panic(err)
+	}
 
-	http.ListenAndServe(":8080", ReqestHandler(mux, tmplt))
-}
+	htmlString := string(content)
 
-func defaultMux() *http.ServeMux {
+	tpl := template.Must(template.New("").Parse(htmlString))
+	h := NewHandler(
+		story,
+		WithTemplate(tpl),
+		WithPathFunc(pathFn),
+	)
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", NotFound)
-	return mux
+	mux.Handle("/story/", h)
+	mux.Handle("/", NewHandler(story))
+	fmt.Printf("Starting the server on port: %d\n", *port)
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", *port), mux))
 }
 
-func NotFound(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Not Found!")
+func pathFn(r *http.Request) string {
+	path := strings.TrimSpace(r.URL.Path)
+	if path == "/story" || path == "/story/" {
+		path = "/story/intro"
+	}
+	return path[len("/story/"):]
 }

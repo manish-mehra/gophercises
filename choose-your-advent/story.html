@@ -56,7 +56,7 @@
 <body>
   <h1>{{.Title}}</h1>
   <section>
-    {{range .Story}}
+    {{range .Paragraphs}}
     <article>{{.}}</article>
     {{end}}
   </section>
@@ -64,7 +64,7 @@
   {{if gt (len .Options) 0}}
     <section>
       {{range .Options}}
-      <a href="{{.Arc}}">{{.Text}}</a>
+      <a href="{{.Chapter}}">{{.Text}}</a>
       {{end}}
     </section>
   {{end}}
