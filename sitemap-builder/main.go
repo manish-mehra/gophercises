@@ -1,25 +1,23 @@
 package main
 
 import (
-	"encoding/xml"
 	"flag"
 	"fmt"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 )
 
 const xmlns = "http://www.sitemaps.org/schemas/sitemap/0.9"
 
-type loc struct {
-	Value string `xml:"loc"`
-}
+// type loc struct {
+// 	Value string `xml:"loc"`
+// }
 
-type urlset struct {
-	Urls  []loc  `xml:"url"`
-	Xmlns string `xml:"xmlns,attr"`
-}
+// type urlset struct {
+// 	Urls  []loc  `xml:"url"`
+// 	Xmlns string `xml:"xmlns,attr"`
+// }
 
 func main() {
 
@@ -27,25 +25,26 @@ func main() {
 	rootLink := flag.String("link", defaultLink, "a flag for url")
 	flag.Parse()
 
-	toXml := urlset{
-		Xmlns: xmlns,
-	}
+	// toXml := urlset{
+	// 	Xmlns: xmlns,
+	// }
 
 	graph := BFS(rootLink)
 
-	for _, page := range graph {
-		for _, url := range page {
-			toXml.Urls = append(toXml.Urls, loc{url})
-		}
-	}
+	// for _, page := range graph {
+	// 	for _, url := range page {
+	// 		toXml.Urls = append(toXml.Urls, loc{url})
+	// 	}
+	// }
 
-	fmt.Print(xml.Header)
-	enc := xml.NewEncoder(os.Stdout)
-	enc.Indent("", "  ")
-	if err := enc.Encode(toXml); err != nil {
-		panic(err)
-	}
-	fmt.Println()
+	// fmt.Print(xml.Header)
+	// enc := xml.NewEncoder(os.Stdout)
+	// enc.Indent("", "  ")
+	// if err := enc.Encode(toXml); err != nil {
+	// 	panic(err)
+	// }
+	// fmt.Println()
+	PrintGraph(graph, *rootLink, 0)
 }
 
 func BFS(rootLink *string) map[string][]string {
